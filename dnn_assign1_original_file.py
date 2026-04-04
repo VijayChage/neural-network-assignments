@@ -15,9 +15,9 @@ def check_nan_inf(name, arr):
     if np.isnan(arr).any() or np.isinf(arr).any():
         print(f"WARNING: {name} contains NaN or Inf values!")
 
-# ==============================
+# ---------------------------------------------------------
 # CUSTOM METRIC FUNCTIONS (From Scratch - Learning Focus)
-# ==============================
+# ---------------------------------------------------------
 
 
 def mean_squared_error(y_true, y_pred):
@@ -114,16 +114,17 @@ def f1_score(y_true, y_pred, average='macro', zero_division=0):
         return zero_division
     return 2 * (prec * rec) / (prec + rec)
 
+# ----------------------------------------------------
+# Display details about Dataset chosen for the models
+# ----------------------------------------------------
 
-# ==============================
-# UNIFIED RESULTS FUNCTION (Reusable across all tasks)
-# ==============================
-def get_unified_assignment_results(dataset_name, n_samples, n_features, problem_type,
-                                   primary_metric, model1_name, model1_metrics,
-                                   model1_time, model1_arch, model2_name,
-                                   model2_metrics, model2_time, model2_arch):
+
+def get_assignment_results(dataset_name, n_samples, n_features, problem_type,
+                           primary_metric, model1_name, model1_metrics,
+                           model1_time, model1_arch, model2_name,
+                           model2_metrics, model2_time, model2_arch):
     """
-    Unified function to generate assignment results for any ML task.
+    Function to generate assignment results for any ML task.
 
     Parameters:
     -----------
@@ -187,9 +188,9 @@ def get_unified_assignment_results(dataset_name, n_samples, n_features, problem_
     return dataset_info, metrics_table, summary_table
 
 
-# ==============================
-# COMMON UTILITY FUNCTION (Suggested)
-# ==============================
+# ---------------------------
+# Common utility function
+# ---------------------------
 def plot_metrics_comparison(model1_metrics, model2_metrics, model1_name, model2_name):
     """Common function to plot metrics comparison for any two models."""
     labels = list(model1_metrics.keys())
@@ -219,22 +220,21 @@ def plot_loss_curves(model1_losses, model2_losses, model1_name, model2_name):
     plt.show()
 
 
-# ==============================
-# TASK 1: HOUSE PRICES REGRESSION
-# ==============================
+# ---------------------------------------------
+# Task 1: Linear Regression - Housing Prices
+# ---------------------------------------------
 
 print("\n" + "="*50)
-print("TASK 1: HOUSE PRICES REGRESSION")
+print("TASK 1: LINEAR REGRESSION - HOUSING PRICES")
 print("="*50)
 
-# 1. DATASET
+# 1.1 Choose Dataset
 data = fetch_openml(name="house_prices", as_frame=True)
 
+# 1.2 Preprocessing the data
 X = data.data.select_dtypes(include=[np.number])
 y = data.target.astype(float).values.reshape(-1, 1)
 
-
-# 2. PREPROCESSING
 X = X.fillna(X.mean())
 
 X_train, X_test, y_train, y_test = train_test_split(
@@ -268,7 +268,7 @@ print(f"\nTraining samples: {X_train.shape[0]}")
 print(f"Test samples: {X_test.shape[0]}")
 
 
-# 3. LINEAR REGRESSION
+# 1.3 Apply Linear Regression logic
 class LinearRegressionScratch:
 
     def __init__(self, lr=0.01, epochs=300):
@@ -332,7 +332,7 @@ class LinearRegressionScratch:
     def predict(self, X):
         return self.forward(X)
 
-# 4. MLP
+# 1.4 Apply Multi-Layer Perceptron logic for Linear Regression
 
 
 class MLP:
@@ -426,13 +426,13 @@ class MLP:
         return self.forward_propagation(X)
 
 
-# 5. TRAINING
+# 1.5 Train the Model
 lin = LinearRegressionScratch().fit(X_train, y_train)
 
 mlp = MLP([X_train.shape[1], 32, 16, 1], lr=0.01)
 mlp.fit(X_train, y_train)
 
-# 6. EVALUATION
+# 1.6 Evaluate the model
 
 
 def inverse(y):
@@ -460,7 +460,7 @@ for key in ["MSE", "RMSE", "MAE", "R2 Score"]:
     if key not in lin_metrics or key not in mlp_metrics:
         raise ValueError(f"Missing metric: {key}")
 
-# 7. RESULTS
+# 1.6 Linear Regression Metrics
 df = pd.DataFrame([lin_metrics, mlp_metrics], index=[
                   "Linear Regression", "MLP"])
 df["Training Time (s)"] = [lin.training_time, mlp.training_time]
@@ -474,9 +474,9 @@ plt.legend()
 plt.title("Loss Curve")
 plt.show()
 
-# ==============================
-# 7E. FULL METRICS COMPARISON
-# ==============================
+# ---------------------------------------
+# 1.7 Compare Linear Regression and MLP
+# ---------------------------------------
 
 metrics_list = ["MSE", "RMSE", "MAE", "R2 Score"]
 
@@ -490,9 +490,9 @@ for i, metric in enumerate(metrics_list):
     plt.grid(axis='y')
     plt.show()
 
-# ==============================
-# 7C. RMSE & MAE
-# ==============================
+# ----------------------
+# 1.8 Compare RMSE and MAE
+# ----------------------
 
 labels = ["RMSE", "MAE"]
 x = np.arange(len(labels))
@@ -507,7 +507,7 @@ plt.grid(axis='y')
 plt.show()
 
 # Use unified function
-data_info, metrics_table, summary_table = get_unified_assignment_results(
+data_info, metrics_table, summary_table = get_assignment_results(
     dataset_name="House Prices",
     n_samples=X.shape[0],
     n_features=X.shape[1],
@@ -549,7 +549,7 @@ R² increases by {r2_diff:.4f}, meaning better variance explanation.
 Linear Regression is faster and simpler but assumes linear relationships. 
 MLP captures non-linear patterns using hidden layers, leading to better performance.
 
-The main challenge was tuning learning rate and stabilizing gradients.
+The main challenge is tuning learning rate and stabilizing gradients.
 
 Overall, MLP is preferred for accuracy, while Linear Regression is useful as a fast baseline.
 """
@@ -557,16 +557,18 @@ Overall, MLP is preferred for accuracy, while Linear Regression is useful as a f
 print(analysis.strip())
 
 
-# ==============================
-# TASK 2: BREAST CANCER CLASSIFICATION
-# ==============================
+# -------------------------------------------------------------
+# TASK 2: Logistic Regression - BREAST CANCER CLASSIFICATION
+# -------------------------------------------------------------
 
 print("\n" + "="*50)
 print("TASK 2: BREAST CANCER CLASSIFICATION")
 print("="*50)
 
+# 2.1 Choose Dataset
 data = load_breast_cancer()
 
+# 2.2 Preprocessing the data
 X = pd.DataFrame(data.data, columns=data.feature_names)
 y = pd.Series(data.target)
 
@@ -589,7 +591,7 @@ print("\nReason for choosing F1-score:")
 print("It balances precision and recall, which is important in medical diagnosis.")
 
 X_train, X_test, y_train, y_test = train_test_split(
-    X, y, test_size=0.2, random_state=42
+    X.values, y, test_size=0.2, random_state=42
 )
 
 scaler = StandardScaler()
@@ -608,6 +610,8 @@ print("\n[DEBUG INFO]")
 print("X_train shape:", X_train.shape)
 print("y_train shape:", y_train.shape)
 print("Any NaNs in X_train?", np.isnan(X_train).sum())
+
+# 2.3 Apply Logistic Regression logic
 
 
 class LogisticRegressionScratch:
@@ -651,6 +655,8 @@ class LogisticRegressionScratch:
     def predict(self, X):
         probs = self.sigmoid(np.dot(X, self.w) + self.b)
         return (probs > 0.5).astype(int)
+
+# 2.4 Apply Multi-Layer Perceptron logic for Binary Classification
 
 
 class MLPBinaryClassifier:
@@ -796,7 +802,7 @@ plot_confusion_matrix(confusion_matrix(
     y_test, mlp_pred), "MLP Confusion Matrix")
 
 # Use unified function for Task 2
-dataset_info, metrics_table, summary_table = get_unified_assignment_results(
+dataset_info, metrics_table, summary_table = get_assignment_results(
     dataset_name="Breast Cancer Dataset",
     n_samples=X.shape[0],
     n_features=X.shape[1],
@@ -875,9 +881,9 @@ print("• Key challenge: tuning learning rate and hidden layer sizes.")
 print("• Insight: simpler models can outperform complex models on structured data.")
 
 
-# ==============================
+# ---------------------------------------------------------------------
 # TASK 3: VEHICLE MULTI-CLASS CLASSIFICATION
-# ==============================
+# ---------------------------------------------------------------------
 
 print("\n" + "="*50)
 print("TASK 3: VEHICLE MULTI-CLASS CLASSIFICATION")
@@ -1100,7 +1106,7 @@ print("MLP is computationally more expensive than Softmax.")
 print("Overall, trade-off exists between accuracy and computation.")
 
 # Use unified function for Task 3
-results_dict = get_unified_assignment_results(
+results_dict = get_assignment_results(
     dataset_name="Vehicle Dataset (Multi-class)",
     n_samples=X.shape[0],
     n_features=X.shape[1],
